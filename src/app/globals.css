@@ -569,43 +569,70 @@ body {
 
 /* ========== KANBAN ========== */
 .kanban-container {
-  padding: 20px 24px;
+  padding: 16px 16px;
   overflow-x: auto;
+  overflow-y: hidden;
   height: calc(100vh - 85px);
+  /* Show scrollbar always so user knows it exists */
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db transparent;
+  }
+  
+  .kanban-container::-webkit-scrollbar {
+    height: 8px;
+  }
+  
+  .kanban-container::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 4px;
+  }
+  
+  .kanban-container::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 4px;
+  }
+  
+  .kanban-container::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
 }
 
 .kanban-board {
   display: flex;
-  gap: 10px;
-  min-height: 100%;
+  gap: 8px;
+    height: 100%;
   align-items: flex-start;
-  width: max-content;
+  /* Fill container, shrink columns equally to fit all 10 */
+    width: 100%;
 }
 
 .kanban-column {
-  width: 240px;
-  min-width: 240px;
+  /* Each column takes equal share of available space */
+    flex: 1 1 0;
+    min-width: 140px;
   background: var(--bg-secondary);
   border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 130px);
+  max-height: calc(100vh - 110px);
   border: 1px solid var(--border-light);
+  overflow: hidden;
 }
 
 .kanban-column-header {
-  padding: 16px 16px 12px;
+  padding: 10px 10px 8px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 4px;
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .kanban-column-title {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
+    min-width: 0;
 }
 
 .kanban-column-dot {
@@ -616,11 +643,14 @@ body {
 }
 
 .kanban-column-name {
-  font-size: 13px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--text-primary);
-  letter-spacing: -0.2px;
+  letter-spacing: 0.1px;
   text-transform: uppercase;
+  white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .kanban-column-count {
@@ -636,10 +666,10 @@ body {
 .kanban-column-body {
   flex: 1;
   overflow-y: auto;
-  padding: 0 10px 10px;
+  padding: 0 6px 8px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   min-height: 60px;
 }
 

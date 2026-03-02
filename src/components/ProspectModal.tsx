@@ -391,14 +391,6 @@ export default function ProspectModal({
                   <input className="form-input" placeholder="¿Qué problema tiene que queremos resolver?" value={form.dolor_principal} onChange={(e) => setForm({ ...form, dolor_principal: e.target.value })} style={{ background: '#fff' }} />
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label">🎯 ¿Qué sigue?</label>
-                  <input className="form-input" placeholder="Siguiente paso concreto" value={form.siguiente_paso} onChange={(e) => setForm({ ...form, siguiente_paso: e.target.value })} />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">📅 ¿Cuándo?</label>
-                  <input className="form-input" type="date" value={form.fecha_siguiente_paso} onChange={(e) => setForm({ ...form, fecha_siguiente_paso: e.target.value })} />
-                </div>
 
                 <div className="form-group">
                   <label className="form-label">Probabilidad (%)</label>
@@ -524,23 +516,62 @@ export default function ProspectModal({
             {/* TAB: Actividad */}
             {activeTab === 'actividad' && isEditing && (
               <div>
-                <div className="activity-add-form">
-                  <select className="form-select" value={newActividadTipo} onChange={(e) => setNewActividadTipo(e.target.value as TipoActividad)} style={{ width: 130 }}>
+
+                {/* Próximo paso — editable in-place */}
+                <div style={{
+                  marginBottom: 20,
+                  padding: '14px 16px',
+                  background: '#eff6ff',
+                  border: '1.5px solid #bfdbfe',
+                  borderRadius: 10,
+                }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#1d4ed8', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    🎯 Próximo paso
+                  </div>
+                  <input
+                    className="form-input"
+                    placeholder="¿Qué es lo que sigue con este prospecto?"
+                    value={form.siguiente_paso}
+                    onChange={(e) => setForm({ ...form, siguiente_paso: e.target.value })}
+                    style={{ background: '#fff', marginBottom: 8 }}
+                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <label style={{ fontSize: 12, color: '#3b82f6', fontWeight: 600, whiteSpace: 'nowrap' }}>📅 ¿Cuándo?</label>
+                    <input
+                      className="form-input"
+                      type="date"
+                      value={form.fecha_siguiente_paso}
+                      onChange={(e) => setForm({ ...form, fecha_siguiente_paso: e.target.value })}
+                      style={{ background: '#fff', flex: 1 }}
+                    />
+                  </div>
+                </div>
+
+                {/* ¿Qué hice hoy? */}
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#374151', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Clock size={14} />
+                  ¿Qué hice hoy?
+                </div>
+                <div className="activity-add-form" style={{ marginBottom: 16 }}>
+                  <select className="form-select" value={newActividadTipo} onChange={(e) => setNewActividadTipo(e.target.value as TipoActividad)} style={{ width: 120 }}>
                     {ACTIVIDAD_TIPOS.map((t) => (
                       <option key={t.value} value={t.value}>{t.label}</option>
                     ))}
                   </select>
-                  <input className="form-input" placeholder="Agregar actividad..." value={newActividad} onChange={(e) => setNewActividad(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddActividad()} style={{ flex: 1 }} />
+                  <input className="form-input" placeholder="Ej: Llamé, mandé propuesta, tuve reunión..." value={newActividad} onChange={(e) => setNewActividad(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddActividad()} style={{ flex: 1 }} />
                   <button className="btn btn-primary btn-icon" onClick={handleAddActividad} disabled={!newActividad.trim()}>
                     <Send size={16} />
                   </button>
                 </div>
+
+                {/* Historial */}
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#374151', marginBottom: 8 }}>Historial</div>
                 {actividades.length === 0 ? (
-                  <div style={{ padding: '30px 0', textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>
+                  <div style={{ padding: '20px 0', textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>
                     Sin actividades registradas
                   </div>
                 ) : (
-                  <div style={{ marginTop: 12 }}>
+                    <div>
                     {actividades.map((act) => {
                       const Icon = ACTIVIDAD_ICONS[act.tipo] || StickyNote;
                       return (
