@@ -63,7 +63,7 @@ export default function DashboardPage() {
       <div className="page-header">
         <div className="page-header-left">
           <h1 className="page-title">Dashboard</h1>
-          <p className="page-subtitle">Resumen general del pipeline REVERSA</p>
+          <p className="page-subtitle">Resumen general del pipeline Kadmiel</p>
         </div>
       </div>
       <div className="dashboard-page">
@@ -82,10 +82,10 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        {/* REVERSA Pipeline stages */}
+        {/* Kadmiel Pipeline stages */}
         <div style={{ marginTop: 16 }}>
           <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, letterSpacing: '-0.3px' }}>
-            Pipeline REVERSA por etapa
+            Pipeline Kadmiel por etapa
           </h2>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             {ETAPAS.map((etapa) => {

@@ -15,7 +15,7 @@ export interface Prospecto {
   created_at: string;
   updated_at: string;
   created_by: string | null;
-  // REVERSA fields
+  // KADMIEL fields
   contacto_nombre: string | null;
   puesto: string | null;
   industria: string | null;
@@ -56,15 +56,20 @@ export interface Actividad {
   created_by: string | null;
 }
 
+export interface ProximoPaso {
+  id: string;
+  prospecto_id: string;
+  descripcion: string;
+  fecha_objetivo: string | null;
+  created_at: string;
+  created_by: string | null;
+}
+
 export type EtapaProspecto =
-  | 'nuevo'
-  | 'primer_contacto'
-  | 'descubrimiento'
-  | 'entendimos_dolor'
-  | 'le_conviene'
-  | 'quien_decide'
-  | 'le_mostramos'
-  | 'cerrando'
+  | 'calificacion'
+  | 'presentacion'
+  | 'negociacion'
+  | 'decision'
   | 'ganado'
   | 'perdido';
 
@@ -82,16 +87,12 @@ export interface EtapaConfig {
 }
 
 export const ETAPAS: EtapaConfig[] = [
-  { id: 'nuevo',            label: 'Nuevo',              emoji: '🆕', color: '#6366f1', bgColor: '#eef2ff', probabilidad: 5 },
-  { id: 'primer_contacto',  label: 'Primer contacto',    emoji: '📞', color: '#3b82f6', bgColor: '#eff6ff', probabilidad: 15 },
-  { id: 'descubrimiento',   label: 'Descubrimiento',     emoji: '🎯', color: '#06b6d4', bgColor: '#ecfeff', probabilidad: 25 },
-  { id: 'entendimos_dolor', label: 'Entendimos su dolor', emoji: '💡', color: '#f59e0b', bgColor: '#fffbeb', probabilidad: 40 },
-  { id: 'le_conviene',      label: 'Le conviene',        emoji: '💰', color: '#84cc16', bgColor: '#f7fee7', probabilidad: 55 },
-  { id: 'quien_decide',     label: 'Quién decide',       emoji: '🗺️', color: '#8b5cf6', bgColor: '#f5f3ff', probabilidad: 65 },
-  { id: 'le_mostramos',     label: 'Le mostramos',       emoji: '🎪', color: '#ec4899', bgColor: '#fdf2f8', probabilidad: 75 },
-  { id: 'cerrando',         label: 'Cerrando',           emoji: '🤝', color: '#f97316', bgColor: '#fff7ed', probabilidad: 85 },
-  { id: 'ganado',           label: '¡Ganado!',           emoji: '🏆', color: '#10b981', bgColor: '#ecfdf5', probabilidad: 100 },
-  { id: 'perdido',          label: 'Perdido',            emoji: '❌', color: '#ef4444', bgColor: '#fef2f2', probabilidad: 0 },
+  { id: 'calificacion', label: 'Calificación', emoji: '🎯', color: '#06b6d4', bgColor: '#ecfeff', probabilidad: 10 },
+  { id: 'presentacion', label: 'Presentación', emoji: '🤝', color: '#8b5cf6', bgColor: '#f5f3ff', probabilidad: 40 },
+  { id: 'negociacion', label: 'Negociación', emoji: '⚖️', color: '#f59e0b', bgColor: '#fffbeb', probabilidad: 70 },
+  { id: 'decision', label: 'Decisión Final', emoji: '⏰', color: '#f97316', bgColor: '#fff7ed', probabilidad: 90 },
+  { id: 'ganado', label: '¡Ganado!', emoji: '🏆', color: '#10b981', bgColor: '#ecfdf5', probabilidad: 100 },
+  { id: 'perdido', label: 'Perdido', emoji: '❌', color: '#ef4444', bgColor: '#fef2f2', probabilidad: 0 },
 ];
 
 export const PRIORIDAD_CONFIG = {
@@ -117,41 +118,24 @@ export const ACTIVIDAD_TIPOS = [
 
 // Checklist items per stage transition (soft gates)
 export const STAGE_CHECKLIST: Record<string, string[]> = {
-  primer_contacto: [
-    'Tiene datos de contacto completos',
-    'Parece buen candidato',
+  presentacion: [
+    'Confirmar tipo de evento o volumen de compra',
+    'Descalificación temprana: "Si el precio no encaja, ¿avisan hoy?"',
+    'Agenda y fecha confirmada para demostración/visita',
   ],
-  descubrimiento: [
-    'Reunión agendada con fecha',
-    'Sabemos quién asiste',
-    'Preparamos la agenda',
+  negociacion: [
+    'El "Sí No" de la prueba: Feedback claro del degustación/servicio',
+    'Aislamiento de Objeciones: ¿Hay algún otro impedimento?',
+    'Presupuesto formal / Propuesta enviada al tomador de decisión',
   ],
-  entendimos_dolor: [
-    'Confirmamos que es buen candidato',
-    'Anotamos sus problemas principales',
-    'Tiene un siguiente paso definido',
-  ],
-  le_conviene: [
-    'Tiene mínimo 3 cosas que le importan',
-    'Sabemos cuánto pierde sin actuar',
-  ],
-  quien_decide: [
-    'Hay un rango de inversión',
-    'Sabemos si es urgente para ellos',
-  ],
-  le_mostramos: [
-    'Sabemos quién aprueba la compra',
-    'Identificamos un aliado interno',
-    'Hay una fecha objetivo de decisión',
-  ],
-  cerrando: [
-    'Hicimos la demo o presentación',
-    'El prospecto confirmó que le sirve',
-    'Hay un siguiente paso definido',
+  decision: [
+    'Miedo a la Pérdida: "¿Podrían avisarme para liberar esta fecha/stock?"',
+    'Validación de Decisores: Todos los involucrados dieron el OK',
+    'Contrato y términos legales enviados para revisión',
   ],
   ganado: [
-    'Se resolvieron todas las dudas',
-    'Hay acuerdo en los términos',
-    'Contrato o acuerdo firmado',
+    'Cierre Kadmiel: "¿Avanzamos con el acuerdo o lo cerramos por hoy?"',
+    'Contrato y/o acuerdo comercial firmado',
+    'Anticipo o depósito en firme recibido',
   ],
 };

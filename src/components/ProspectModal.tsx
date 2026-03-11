@@ -25,6 +25,7 @@ import {
   type TipoActividad,
   type AdminUser,
   type ChecklistItem,
+  type ProximoPaso,
   ETAPAS,
   ORIGEN_OPTIONS,
   ACTIVIDAD_TIPOS,
@@ -69,13 +70,13 @@ export default function ProspectModal({
     email: '',
     telefono: '',
     valor_estimado: '',
-    etapa: defaultEtapa || 'nuevo' as EtapaProspecto,
+    etapa: defaultEtapa || 'calificacion' as EtapaProspecto,
     prioridad: 'media' as PrioridadProspecto,
     notas: '',
     origen: '' as OrigenProspecto | '',
     asignado_a: '' as string,
     sucursal: currentUserSucursal || 'Teran',
-    // REVERSA fields
+    // KADMIEL fields
     contacto_nombre: '',
     puesto: '',
     industria: '',
@@ -87,9 +88,11 @@ export default function ProspectModal({
   });
 
   const [actividades, setActividades] = useState<Actividad[]>([]);
+  const [pasosHistory, setPasosHistory] = useState<ProximoPaso[]>([]);
   const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
   const [newActividad, setNewActividad] = useState('');
   const [newActividadTipo, setNewActividadTipo] = useState<TipoActividad>('nota');
+  const [savingPaso, setSavingPaso] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [activeTab, setActiveTab] = useState<'info' | 'actividad' | 'checklist'>('info');
@@ -126,9 +129,10 @@ export default function ProspectModal({
         razon_perdida: prospecto.razon_perdida || '',
       });
       fetchActividades(prospecto.id);
+      fetchPasosHistory(prospecto.id);
       fetchChecklist(prospecto.id);
     } else {
-      const etapaDefault = defaultEtapa || 'nuevo';
+      const etapaDefault = defaultEtapa || 'calificacion';
       const prob = ETAPAS.find(e => e.id === etapaDefault)?.probabilidad || 0;
       setForm({
         nombre: '',
@@ -152,6 +156,7 @@ export default function ProspectModal({
         razon_perdida: '',
       });
       setActividades([]);
+      setPasosHistory([]);
       setChecklist([]);
       setActiveTab('info');
     }
@@ -164,6 +169,15 @@ export default function ProspectModal({
       .eq('prospecto_id', prospectoId)
       .order('created_at', { ascending: false });
     setActividades(data || []);
+  };
+
+  const fetchPasosHistory = async (prospectoId: string) => {
+    const { data } = await supabase
+      .from('crm_prospectos_proximos_pasos')
+      .select('*')
+      .eq('prospecto_id', prospectoId)
+      .order('created_at', { ascending: false });
+    setPasosHistory(data || []);
   };
 
   const fetchChecklist = async (dealId: string) => {
@@ -246,6 +260,30 @@ export default function ProspectModal({
     });
     setNewActividad('');
     fetchActividades(prospecto.id);
+  };
+
+  const handleSavePaso = async () => {
+    if (!form.siguiente_paso.trim() || !prospecto) return;
+    setSavingPaso(true);
+    
+    // 1. Guardar en el historial
+    const { data: { user } } = await supabase.auth.getUser();
+    await supabase.from('crm_prospectos_proximos_pasos').insert({
+      prospecto_id: prospecto.id,
+      descripcion: form.siguiente_paso.trim(),
+      fecha_objetivo: form.fecha_siguiente_paso || null,
+      created_by: user?.id,
+    });
+
+    // 2. Sincronizar con el prospecto en DB de inmediato para que salven ambos
+    await supabase.from('crm_prospectos').update({
+      siguiente_paso: form.siguiente_paso.trim(),
+      fecha_siguiente_paso: form.fecha_siguiente_paso || null,
+    }).eq('id', prospecto.id);
+
+    setSavingPaso(false);
+    fetchPasosHistory(prospecto.id);
+    onSaved(); // Trigger parent refresh in case we need the table view updated
   };
 
   const formatDate = (date: string) => {
@@ -462,7 +500,7 @@ export default function ProspectModal({
             {/* TAB: Checklist */}
             {activeTab === 'checklist' && isEditing && (
               <div>
-                {ETAPAS.filter(e => !['nuevo', 'perdido'].includes(e.id)).map(etapa => {
+                {ETAPAS.filter(e => !['calificacion', 'perdido'].includes(e.id)).map(etapa => {
                   const items = checklist.filter(c => c.etapa === etapa.id);
                   const defs = STAGE_CHECKLIST[etapa.id] || [];
                   if (!defs.length) return null;
@@ -544,8 +582,49 @@ export default function ProspectModal({
                       onChange={(e) => setForm({ ...form, fecha_siguiente_paso: e.target.value })}
                       style={{ background: '#fff', flex: 1 }}
                     />
+                    <button 
+                      className="btn btn-primary" 
+                      onClick={handleSavePaso}
+                      disabled={savingPaso || !form.siguiente_paso.trim()}
+                      style={{ padding: '6px 12px', fontSize: 12, height: 36 }}
+                    >
+                      {savingPaso ? <div className="spinner spinner-light" style={{ width: 14, height: 14 }}/> : <Save size={14} />}
+                    </button>
                   </div>
                 </div>
+
+                {/* Historial de Próximos pasos antiguos */}
+                {pasosHistory.length > 0 && (
+                  <div style={{ marginBottom: 24 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>
+                      Pasos anteriores
+                    </div>
+                    {pasosHistory.map((paso, idx) => (
+                      <div key={paso.id} style={{ 
+                        padding: '10px 14px', 
+                        background: '#f9fafb', 
+                        borderLeft: idx === 0 ? '2px solid #3b82f6' : '1px solid #e5e7eb',
+                        borderBottom: '1px solid #e5e7eb',
+                        borderRight: '1px solid #e5e7eb',
+                        borderTop: idx === 0 ? '1px solid #e5e7eb' : 'none',
+                        borderTopLeftRadius: idx === 0 ? 6 : 0,
+                        borderTopRightRadius: idx === 0 ? 6 : 0,
+                        borderBottomLeftRadius: idx === pasosHistory.length - 1 ? 6 : 0,
+                        borderBottomRightRadius: idx === pasosHistory.length - 1 ? 6 : 0,
+                      }}>
+                        <div style={{ fontSize: 13, color: '#374151', marginBottom: 4 }}>
+                          {paso.descripcion}
+                        </div>
+                        <div style={{ fontSize: 11, color: '#6b7280', display: 'flex', gap: 12 }}>
+                          {paso.fecha_objetivo && (
+                            <span style={{ color: '#1d4ed8' }}>Para: {new Date(paso.fecha_objetivo).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}</span>
+                          )}
+                          <span>Creado: {formatDate(paso.created_at)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* ¿Qué hice hoy? */}
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#374151', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>

@@ -7,10 +7,13 @@ import {
   Zap,
   LayoutDashboard,
   Users,
+  GraduationCap,
   LogOut,
   User,
   PanelLeftClose,
   PanelLeftOpen,
+  Menu,
+  X,
 } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
@@ -24,12 +27,18 @@ export default function AppShell({ children }: AppShellProps) {
   const supabase = createClient();
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);
     });
   }, [supabase.auth]);
+
+  // Cierra el menú en móvil al navegar
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
 
   if (pathname === '/login') {
     return <>{children}</>;
@@ -38,6 +47,7 @@ export default function AppShell({ children }: AppShellProps) {
   const navItems = [
     { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/prospectos', icon: Users, label: 'Pipeline' },
+    { href: '/aprendizaje', icon: GraduationCap, label: 'Aprendizaje' },
   ];
 
   const handleLogout = async () => {
@@ -52,7 +62,29 @@ export default function AppShell({ children }: AppShellProps) {
 
   return (
     <div className="app-layout">
-      <aside className={`sidebar ${collapsed ? 'sidebar-collapsed' : ''}`}>
+      {/* HEADER EXCLUSIVO MÓVIL */}
+      <header className="mobile-header">
+        <div className="mobile-header-brand">
+          <div className="mobile-header-brand-icon">
+            <Zap size={18} />
+          </div>
+          <h1>Kadmiel CRM</h1>
+        </div>
+        <button 
+          className="mobile-menu-btn"
+          onClick={() => setMobileMenuOpen(true)}
+        >
+          <Menu size={24} />
+        </button>
+      </header>
+
+      {/* OVERLAY PARA MÓVIL */}
+      <div 
+        className={`sidebar-overlay ${mobileMenuOpen ? 'mobile-open' : ''}`}
+        onClick={() => setMobileMenuOpen(false)}
+      />
+
+      <aside className={`sidebar ${collapsed ? 'sidebar-collapsed' : ''} ${mobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-header">
           <div className="sidebar-brand">
             <div className="sidebar-brand-icon">
@@ -71,6 +103,15 @@ export default function AppShell({ children }: AppShellProps) {
             title={collapsed ? 'Expandir menú' : 'Colapsar menú'}
           >
             {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+          </button>
+          
+          {/* BOTÓN PARA CERRAR SOLO EN MOVIL (A la derecha del brand) */}
+          <button
+            className="mobile-menu-btn"
+            style={{ display: 'none', position: 'absolute', right: 16, top: 16 }}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <X size={24} style={{ display: mobileMenuOpen ? 'block' : 'none' }} />
           </button>
         </div>
 

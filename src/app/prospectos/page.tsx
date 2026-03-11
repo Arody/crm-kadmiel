@@ -38,7 +38,7 @@ export default function ProspectosPage() {
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProspecto, setSelectedProspecto] = useState<Prospecto | null>(null);
-  const [defaultEtapa, setDefaultEtapa] = useState<EtapaProspecto>('nuevo');
+  const [defaultEtapa, setDefaultEtapa] = useState<EtapaProspecto>('calificacion');
 
   // Stage gate state
   const [gateCheck, setGateCheck] = useState<{
@@ -188,7 +188,7 @@ export default function ProspectosPage() {
     <>
       <div className="page-header">
         <div className="page-header-left">
-          <h1 className="page-title">Pipeline REVERSA</h1>
+          <h1 className="page-title">Pipeline Kadmiel</h1>
           <p className="page-subtitle">
             {filteredProspectos.length} prospectos · Pipeline:{' '}
             {new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', minimumFractionDigits: 0 }).format(totalPipeline)}
@@ -214,7 +214,7 @@ export default function ProspectosPage() {
           <button
             id="add-prospecto-btn"
             className="btn btn-primary"
-            onClick={() => handleAddProspect('nuevo')}
+            onClick={() => handleAddProspect('calificacion')}
           >
             <UserPlus size={16} />
             Nuevo prospecto
