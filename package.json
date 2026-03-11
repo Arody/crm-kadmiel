@@ -6,6 +6,7 @@
     "dev": "next dev -p 3008",
     "build": "next build",
     "start": "next start",
+    "start:vps": "PORT=3009 node .next/standalone/Developer/NEXT/crm-kadmiel/server.js",
     "lint": "eslint"
   },
   "dependencies": {
